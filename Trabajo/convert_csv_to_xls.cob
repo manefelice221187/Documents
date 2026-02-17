@@ -1,73 +1,81 @@
-IDENTIFICATION DIVISION.
-PROGRAM-ID. CSVTOXLS.
-AUTHOR. GitHub Copilot.
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. CSVTOXLS.
+       AUTHOR. GitHub Copilot.
 
-ENVIRONMENT DIVISION.
-INPUT-OUTPUT SECTION.
-FILE-CONTROL.
-    SELECT CSV-FILE ASSIGN TO "/Users/marcelofelice/Documents/sample.csv"
-        ORGANIZATION IS LINE SEQUENTIAL.
-    SELECT XLS-FILE ASSIGN TO "/Users/marcelofelice/Documents/output.xls"
-        ORGANIZATION IS LINE SEQUENTIAL.
+       ENVIRONMENT DIVISION.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+         SELECT CSV-FILE ASSIGN TO 
+            "/Users/marcelofelice/Documents/sample.csv"
+       ORGANIZATION IS LINE SEQUENTIAL.
+        SELECT XLS-FILE ASSIGN TO 
+           "/Users/marcelofelice/Documents/output.xls"
+       ORGANIZATION IS LINE SEQUENTIAL.
 
-DATA DIVISION.
-FILE SECTION.
-FD CSV-FILE.
-01 CSV-REC PIC X(1000).
-FD XLS-FILE.
-01 XLS-REC PIC X(4096).
-
-WORKING-STORAGE SECTION.
-01 WS-LINE  PIC X(1000).
-01 EOF-FLAG PIC X VALUE 'N'.
-01 TAB      PIC X VALUE X'09'.
-01 OUT-LINE PIC X(4096).
-01 P        PIC S9(4) COMP VALUE 1.
-01 J        PIC 9(3) VALUE 1.
-01 FIELD-TEXT.
-   05 FIELD-ITEM OCCURS 20 TIMES.
-      10 FIELD-TEXT PIC X(200).
-
-PROCEDURE DIVISION.
-MAIN-LOGIC.
-    OPEN INPUT CSV-FILE
-         OUTPUT XLS-FILE
-    PERFORM WRITE-HEADER
-    PERFORM UNTIL EOF-FLAG = 'Y'
-        READ CSV-FILE
-            AT END
-               MOVE 'Y' TO EOF-FLAG
-            NOT AT END
-               MOVE CSV-REC TO WS-LINE
-               PERFORM PARSE-AND-WRITE
-        END-READ
-    END-PERFORM
-    PERFORM WRITE-FOOTER
-    CLOSE CSV-FILE XLS-FILE
-    STOP RUN.
-
-PARSE-AND-WRITE.
-    MOVE SPACES TO FIELD-TEXT
-    UNSTRING WS-LINE DELIMITED BY "," INTO
-        FIELD-TEXT(1) FIELD-TEXT(2) FIELD-TEXT(3) FIELD-TEXT(4) FIELD-TEXT(5)
-        FIELD-TEXT(6) FIELD-TEXT(7) FIELD-TEXT(8) FIELD-TEXT(9) FIELD-TEXT(10)
-        FIELD-TEXT(11) FIELD-TEXT(12) FIELD-TEXT(13) FIELD-TEXT(14) FIELD-TEXT(15)
-        FIELD-TEXT(16) FIELD-TEXT(17) FIELD-TEXT(18) FIELD-TEXT(19) FIELD-TEXT(20)
-    END-UNSTRING
-    MOVE 1 TO P
-    MOVE SPACES TO OUT-LINE
-    PERFORM VARYING J FROM 1 BY 1 UNTIL J > 20
-        STRING FIELD-TEXT(J) DELIMITED BY SIZE
-               TAB DELIMITED BY SIZE
-               INTO OUT-LINE WITH POINTER P
-    END-PERFORM
-    MOVE OUT-LINE TO XLS-REC
-    WRITE XLS-REC.
-
-WRITE-HEADER.
-    MOVE "<html><body><table border=\"1\">" TO XLS-REC
-    WRITE XLS-REC.
-
-WRITE-FOOTER.
-    MOVE "</table></body></html>" TO XLS-REC
-    WRITE XLS-REC.
+       DATA DIVISION.
+       FILE SECTION.
+       FD CSV-FILE.
+       01 CSV-REC PIC X(1000).
+       FD XLS-FILE.
+       01 XLS-REC PIC X(4096).
+       
+       WORKING-STORAGE SECTION.
+       01 WS-LINE  PIC X(1000).
+       01 EOF-FLAG PIC X VALUE 'N'.
+       01 TAB      PIC X VALUE X'09'.
+       01 OUT-LINE PIC X(4096).
+       01 P        PIC S9(4) COMP VALUE 1.
+       01 J        PIC 9(3) VALUE 1.
+       01 FIELD-ARRAY.
+          05 FIELD-ITEM OCCURS 20 TIMES.
+            10 FIELD-TEXT PIC X(200).
+       
+       PROCEDURE DIVISION.
+       MAIN-LOGIC.
+           OPEN INPUT CSV-FILE
+           OPEN OUTPUT XLS-FILE
+           PERFORM WRITE-HEADER
+           PERFORM UNTIL EOF-FLAG = 'Y'
+               READ CSV-FILE
+                    AT END
+                       MOVE 'Y' TO EOF-FLAG
+                    NOT AT END
+                       MOVE CSV-REC TO WS-LINE
+                       PERFORM PARSE-AND-WRITE
+               END-READ
+           END-PERFORM
+           PERFORM WRITE-FOOTER
+           CLOSE CSV-FILE
+           CLOSE XLS-FILE
+           STOP RUN.
+       
+       PARSE-AND-WRITE.
+           MOVE SPACES TO FIELD-ARRAY
+           UNSTRING WS-LINE DELIMITED BY "," INTO
+               FIELD-item(1) FIELD-TEXT(2) FIELD-TEXT(3) FIELD-TEXT(4) 
+               FIELD-TEXT(5)
+               FIELD-TEXT(6) FIELD-TEXT(7) FIELD-TEXT(8) FIELD-TEXT(9) 
+               FIELD-TEXT(10)
+               FIELD-TEXT(11) FIELD-TEXT(12) FIELD-TEXT(13)
+               FIELD-TEXT(14) FIELD-TEXT(15)
+               FIELD-TEXT(16) FIELD-TEXT(17) FIELD-TEXT(18) 
+               FIELD-TEXT(19) FIELD-TEXT(20)
+           END-UNSTRING
+           MOVE 1 TO P
+           MOVE SPACES TO OUT-LINE
+           PERFORM VARYING J FROM 1 BY 1 UNTIL J > 20
+               STRING FIELD-TEXT(J) DELIMITED BY SIZE
+                       TAB DELIMITED BY SIZE
+                       INTO OUT-LINE WITH POINTER P
+           END-PERFORM
+           MOVE OUT-LINE TO XLS-REC
+           WRITE XLS-REC.
+       
+       WRITE-HEADER.
+           MOVE '<html><body><table border="1">' TO XLS-REC
+           WRITE XLS-REC.
+       
+       WRITE-FOOTER.
+           MOVE "</table></body></html>" TO XLS-REC
+           WRITE XLS-REC.
+       
